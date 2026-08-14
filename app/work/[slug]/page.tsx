@@ -1,0 +1,11 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { projects } from "@/lib/content";
+
+export function generateStaticParams(){return projects.map(p=>({slug:p.slug}))}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const p=projects.find(x=>x.slug===slug);return p?{title:p.title,description:p.shortDescription}:{title:"Work"}}
+
+export default async function CaseStudy({params}:{params:Promise<{slug:string}>}){
+ const {slug}=await params; const p=projects.find(x=>x.slug===slug); if(!p) notFound();
+ return <main className="min-h-screen px-6 pb-32 pt-40 lg:px-10"><article className="mx-auto max-w-[1600px]"><p className="mb-16 text-[11px] uppercase tracking-[.22em] text-white/35"><span className="text-[var(--accent)]">{p.number}</span> / {p.category}</p><h1 className="max-w-[1200px] text-[clamp(3.5rem,8vw,9rem)] font-medium leading-[.84] tracking-[-.08em]">{p.title}</h1><p className="mt-12 max-w-2xl text-xl leading-8 text-white/45">{p.shortDescription}</p><div className="mt-24 grid border-t border-white/10 md:grid-cols-3">{[["The problem",p.problem],["The approach",p.approach],["The outcome",p.outcome]].map(([a,b],i)=><div key={a} className={`py-8 md:px-10 ${i<2?"border-b border-white/10 md:border-b-0 md:border-r":""}`}><p className="text-[10px] uppercase tracking-[.18em] text-white/25">{a}</p><p className="mt-5 text-sm leading-7 text-white/55">{b}</p></div>)}</div><div className="mt-24 grid gap-16 lg:grid-cols-[1fr_.6fr]"><div><p className="text-[10px] uppercase tracking-[.18em] text-white/25">The solution</p><p className="mt-6 max-w-3xl text-2xl leading-relaxed text-white/75">{p.solution}</p></div><div><p className="text-[10px] uppercase tracking-[.18em] text-white/25">Areas</p><div className="mt-6 flex flex-wrap gap-2">{p.tags.map(t=><span key={t} className="border border-white/10 px-3 py-2 text-xs text-white/40">{t}</span>)}</div></div></div><div className="mt-32 border-t border-white/10 pt-8"><Link href="/work" className="text-sm text-white/45 hover:text-white">← Back to work</Link></div></article></main>
+}

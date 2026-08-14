@@ -1,0 +1,3 @@
+import { ApproachSection } from "@/components/sections/approach";
+export const metadata={title:"Approach"};
+export default function Approach(){return <main className="pt-20"><ApproachSection/><section className="border-t border-white/10 px-6 py-32 lg:px-10"><div className="mx-auto max-w-[1600px]"><p className="text-[11px] uppercase tracking-[.22em] text-white/35">A principle</p><h1 className="mt-10 max-w-5xl text-[clamp(3rem,7vw,7rem)] font-medium leading-[.86] tracking-[-.075em]">DON&apos;T START WITH<br/>THE TOOL.<br/><span className="text-white/25">START WITH THE PROBLEM.</span></h1></div></section></main>}

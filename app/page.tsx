@@ -1,8 +1,22 @@
 ﻿"use client";
+
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe, CheckCircle2, Send, ShieldCheck, Cpu, Building2, Briefcase, Layers, ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  BriefcaseBusiness,
+  Mail,
+  Send,
+  Sparkles,
+  X,
+} from "lucide-react";
+
+/* =========================================================
+   STARFIELD
+========================================================= */
 
 function LumaStarfieldCanvas() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -12,40 +26,67 @@ function LumaStarfieldCanvas() {
     if (!mount) return;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x030308, 0.08);
+    scene.fog = new THREE.FogExp2(0x030308, 0.075);
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
     camera.position.z = 1;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+    });
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
     mount.appendChild(renderer.domElement);
 
-    const count = 600;
+    const count = 650;
+
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 6);
     const colors = new Float32Array(count * 6);
 
-    const stars: Array<{ x: number; y: number; z: number; len: number; speed: number; baseColor: THREE.Color }> = [];
+    const stars: Array<{
+      x: number;
+      y: number;
+      z: number;
+      len: number;
+      speed: number;
+      color: THREE.Color;
+    }> = [];
 
-    const colorPalette = [
-      new THREE.Color("#38bdf8"),
-      new THREE.Color("#818cf8"),
-      new THREE.Color("#c084fc"),
+    const palette = [
       new THREE.Color("#ffffff"),
+      new THREE.Color("#dbeafe"),
+      new THREE.Color("#93c5fd"),
+      new THREE.Color("#c4b5fd"),
     ];
 
     for (let i = 0; i < count; i++) {
       const x = (Math.random() - 0.5) * 20;
       const y = (Math.random() - 0.5) * 20;
       const z = Math.random() * -30;
-      const len = 0.4 + Math.random() * 0.8;
-      const speed = 0.15 + Math.random() * 0.25;
 
-      const baseColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+      const len = 0.35 + Math.random() * 0.8;
+      const speed = 0.12 + Math.random() * 0.26;
 
-      stars.push({ x, y, z, len, speed, baseColor });
+      const color = palette[Math.floor(Math.random() * palette.length)];
+
+      stars.push({
+        x,
+        y,
+        z,
+        len,
+        speed,
+        color,
+      });
 
       positions[i * 6] = x;
       positions[i * 6 + 1] = y;
@@ -55,50 +96,58 @@ function LumaStarfieldCanvas() {
       positions[i * 6 + 4] = y;
       positions[i * 6 + 5] = z - len;
 
-      colors[i * 6] = baseColor.r;
-      colors[i * 6 + 1] = baseColor.g;
-      colors[i * 6 + 2] = baseColor.b;
+      colors[i * 6] = color.r;
+      colors[i * 6 + 1] = color.g;
+      colors[i * 6 + 2] = color.b;
 
-      colors[i * 6 + 3] = baseColor.r * 0.2;
-      colors[i * 6 + 4] = baseColor.g * 0.2;
-      colors[i * 6 + 5] = baseColor.b * 0.2;
+      colors[i * 6 + 3] = color.r * 0.18;
+      colors[i * 6 + 4] = color.g * 0.18;
+      colors[i * 6 + 5] = color.b * 0.18;
     }
 
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+
+    geometry.setAttribute(
+      "color",
+      new THREE.BufferAttribute(colors, 3)
+    );
 
     const material = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.78,
       blending: THREE.AdditiveBlending,
-      linewidth: 1.5,
     });
 
-    const linesMesh = new THREE.LineSegments(geometry, material);
-    scene.add(linesMesh);
+    const mesh = new THREE.LineSegments(geometry, material);
+
+    scene.add(mesh);
 
     let mouseX = 0;
     let mouseY = 0;
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX = (e.clientX / window.innerWidth - 0.5) * 0.8;
-      mouseY = (e.clientY / window.innerHeight - 0.5) * 0.8;
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 0.7;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 0.7;
     };
-
-    window.addEventListener("mousemove", handleMouseMove);
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
+
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
 
+    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("resize", handleResize);
 
-    let animId: number;
+    let animationId: number;
+
     const animate = () => {
-      const posArr = geometry.attributes.position.array as Float32Array;
+      const array = geometry.attributes.position.array as Float32Array;
 
       for (let i = 0; i < count; i++) {
         const star = stars[i];
@@ -111,109 +160,147 @@ function LumaStarfieldCanvas() {
           star.y = (Math.random() - 0.5) * 20;
         }
 
-        posArr[i * 6] = star.x;
-        posArr[i * 6 + 1] = star.y;
-        posArr[i * 6 + 2] = star.z;
+        array[i * 6] = star.x;
+        array[i * 6 + 1] = star.y;
+        array[i * 6 + 2] = star.z;
 
-        posArr[i * 6 + 3] = star.x;
-        posArr[i * 6 + 4] = star.y;
-        posArr[i * 6 + 5] = star.z - star.len;
+        array[i * 6 + 3] = star.x;
+        array[i * 6 + 4] = star.y;
+        array[i * 6 + 5] = star.z - star.len;
       }
 
       geometry.attributes.position.needsUpdate = true;
 
-      camera.position.x += (mouseX - camera.position.x) * 0.04;
-      camera.position.y += (-mouseY - camera.position.y) * 0.04;
-      camera.rotation.z += 0.0005;
+      camera.position.x += (mouseX - camera.position.x) * 0.025;
+      camera.position.y += (-mouseY - camera.position.y) * 0.025;
+
+      camera.rotation.z += 0.00035;
 
       renderer.render(scene, camera);
-      animId = requestAnimationFrame(animate);
+
+      animationId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
+      cancelAnimationFrame(animationId);
+
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animId);
+
       geometry.dispose();
       material.dispose();
-      if (mount && mount.contains(renderer.domElement)) {
+
+      if (mount.contains(renderer.domElement)) {
         mount.removeChild(renderer.domElement);
       }
+
+      renderer.dispose();
     };
   }, []);
 
-  return <div ref={mountRef} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0, pointerEvents: "none" }} />;
+  return (
+    <div
+      ref={mountRef}
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+    />
+  );
 }
 
-function Profile3DCard() {
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
+/* =========================================================
+   PROFILE
+========================================================= */
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = e.currentTarget.getBoundingClientRect();
-    const cardWidth = card.width;
-    const cardHeight = card.height;
-    const centerX = card.left + cardWidth / 2;
-    const centerY = card.top + cardHeight / 2;
-    const mouseX = e.clientX - centerX;
-    const mouseY = e.clientY - centerY;
+function ProfileCard() {
+  const [rotation, setRotation] = useState({
+    x: 0,
+    y: 0,
+  });
 
-    const rotateXUncapped = (-mouseY / (cardHeight / 2)) * 14;
-    const rotateYUncapped = (mouseX / (cardWidth / 2)) * 14;
+  const [hovered, setHovered] = useState(false);
 
-    setRotate({ x: rotateXUncapped, y: rotateYUncapped });
-  };
+  const handleMove = (
+    e: React.MouseEvent<HTMLDivElement>
+  ) => {
+    const rect = e.currentTarget.getBoundingClientRect();
 
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setRotate({ x: 0, y: 0 });
+    const x =
+      (e.clientX - (rect.left + rect.width / 2)) /
+      (rect.width / 2);
+
+    const y =
+      (e.clientY - (rect.top + rect.height / 2)) /
+      (rect.height / 2);
+
+    setRotation({
+      x: -y * 8,
+      y: x * 8,
+    });
   };
 
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
+    <motion.div
+      onMouseMove={handleMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        setRotation({ x: 0, y: 0 });
+      }}
+      animate={{
+        y: hovered ? 0 : [0, -8, 0],
+      }}
+      transition={{
+        duration: 4,
+        repeat: hovered ? 0 : Infinity,
+        ease: "easeInOut",
+      }}
       style={{
-        perspective: "1000px",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center"
+        width: "270px",
+        height: "350px",
+        perspective: "1200px",
       }}
     >
       <motion.div
-        animate={!isHovered ? { y: [0, -10, 0] } : { y: 0 }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        animate={{
+          rotateX: rotation.x,
+          rotateY: rotation.y,
+        }}
+        transition={{
+          duration: 0.18,
+        }}
         style={{
           width: "100%",
-          maxHeight: "400px",
-          aspectRatio: "3/4",
-          borderRadius: "24px",
+          height: "100%",
           position: "relative",
+          borderRadius: "30px",
+          padding: "8px",
+          background:
+            "linear-gradient(145deg, rgba(255,255,255,.25), rgba(255,255,255,.03))",
+          border: "1px solid rgba(255,255,255,.18)",
+          boxShadow: hovered
+            ? "0 35px 90px rgba(56,189,248,.24)"
+            : "0 25px 70px rgba(0,0,0,.45)",
           transformStyle: "preserve-3d",
-          transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
-          transition: isHovered ? "transform 0.1s ease-out" : "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
-          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02))",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(56, 189, 248, 0.3)",
-          boxShadow: isHovered
-            ? "0 25px 50px -12px rgba(56, 189, 248, 0.3)"
-            : "0 20px 40px -15px rgba(0, 0, 0, 0.5)",
-          padding: "10px",
-          overflow: "hidden"
         }}
       >
-        <div style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "16px",
-          overflow: "hidden",
-          position: "relative",
-          transform: "translateZ(20px)"
-        }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            borderRadius: "24px",
+            position: "relative",
+            transform: "translateZ(25px)",
+          }}
+        >
           <img
             src="/profile.jpg"
             alt="Jimmy Cornejo"
@@ -221,446 +308,2462 @@ function Profile3DCard() {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              transition: "transform 0.5s ease",
-              transform: isHovered ? "scale(1.05)" : "scale(1)"
+              transform: hovered ? "scale(1.045)" : "scale(1)",
+              transition:
+                "transform .7s cubic-bezier(.16,1,.3,1)",
             }}
           />
+
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to top, rgba(0,0,0,.7), transparent 50%)",
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: "20px",
+              right: "20px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                letterSpacing: ".18em",
+                color: "#93c5fd",
+                fontFamily: "monospace",
+                marginBottom: "5px",
+              }}
+            >
+              DIGITAL SPACE
+            </div>
+
+            <div
+              style={{
+                fontSize: "17px",
+                fontWeight: 700,
+                color: "#fff",
+              }}
+            >
+              Jimmy Cornejo
+            </div>
+          </div>
         </div>
+
+        <div
+          style={{
+            position: "absolute",
+            width: "70px",
+            height: "70px",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(147,197,253,.22), transparent 70%)",
+            top: "-20px",
+            right: "-15px",
+            filter: "blur(2px)",
+          }}
+        />
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
 
-const content = {
-  es: {
-    badge: "JIMMY CORNEJO — MI ESPACIO DIGITAL",
-    nameTitle: "JIMMY CORNEJO",
-    subBadge: "My Digital Space",
-    jobTitle: "Business Administration & Operations",
-    bio: "Especialista en estructurar operaciones, resolver cuellos de botella y optimizar la administración de tu negocio.",
-    pillars: [
-      { 
-        title: "Gestión Operativa & Back-Office", 
-        desc: "Estandarización de procesos internos, diseño de SOPs, control administrativo continuo y eliminación estratégica de cuellos de botella.", 
-        color: "#38bdf8", 
-        tab: "portfolio", 
-        icon: Briefcase 
-      },
-      { 
-        title: "Dirección Ejecutiva & Coordinación", 
-        desc: "Liderazgo organizacional, gestión presupuestaria, planificación logística de proyectos, delegaciones e itinerarios.", 
-        color: "#a855f7", 
-        tab: "portfolio", 
-        icon: Layers 
-      },
-      { 
-        title: "Sistemas de Control & Productividad Digital", 
-        desc: "Organización de workspaces digitales (Notion, suites de oficina), modelos de reporte en tiempo real y automatización ligera de flujos de trabajo.", 
-        color: "#34d399", 
-        tab: "portfolio", 
-        icon: ShieldCheck 
-      }
-    ],
-    tabs: { home: "Inicio", about: "Perfil", portfolio: "Especialidades", contact: "Contacto" },
-    aboutTitle: "Arquitectura Operativa & Estrategia",
-    aboutSub: "Soluciones de alto rendimiento para la gestión administrativa moderna.",
-    aboutText1: "Especialista en estructurar y optimizar la columna vertebral operativa de empresas y organizaciones. Mi enfoque radica en convertir procesos lentos o desorganizados en sistemas ágiles, medibles y sostenibles.",
-    aboutText2: "A través del diseño de manuales operativos (SOPs), la estructuración de modelos administrativos y el uso eficiente de herramientas digitales de gestión, garantizo un control total sobre las operaciones.",
-    clearOpsCategory: "SERVICIOS PRINCIPALES",
-    clearOpsTitle: "Gestión Operativa & Back-Office",
-    clearOpsDesc: "Servicios integrales de soporte administrativo, control de gestión, resolución de cuellos de botella operativos y estandarización de procesos de trabajo para garantizar continuidad y escalabilidad.",
-    sportsCategory: "DIRECCIÓN & COORDINACIÓN",
-    sportsTitle: "Dirección Ejecutiva & Coordinación",
-    sportsDesc: "Administración integral de recursos, estructuración presupuestaria, planificación logística de proyectos estratégicos y coordinación fluida entre equipos operativos.",
-    techCategory: "SISTEMAS & PRODUCTIVIDAD",
-    techTitle: "Sistemas de Control & Productividad Digital",
-    techDesc: "Implementación de workspaces organizados, plantillas de reporte administrativo en tiempo real e integración de herramientas digitales para optimizar la comunicación interna.",
-    formTitle: "Iniciar Conversación",
-    formSub: "Cuéntame sobre tu empresa u operación para evaluar cómo optimizar tus procesos.",
-    namePlaceholder: "Nombre completo o empresa",
-    emailPlaceholder: "correo@ejemplo.com",
-    msgPlaceholder: "Describe brevemente los procesos o cuellos de botella que deseas optimizar...",
-    sendBtn: "Enviar Mensaje",
-    sentMsg: "¡Mensaje preparado con éxito! Se abrirá tu aplicación de correo."
-  },
-  en: {
-    badge: "JIMMY CORNEJO — MY DIGITAL SPACE",
-    nameTitle: "JIMMY CORNEJO",
-    subBadge: "My Digital Space",
-    jobTitle: "Business Administration & Operations",
-    bio: "Specializing in operational structuring, resolving bottlenecks, and refining administrative workflows for growing businesses.",
-    pillars: [
-      { 
-        title: "Operations & Back-Office Management", 
-        desc: "Internal process standardization, SOP creation, continuous administrative oversight, and bottleneck elimination.", 
-        color: "#38bdf8", 
-        tab: "portfolio", 
-        icon: Briefcase 
-      },
-      { 
-        title: "Executive Leadership & Coordination", 
-        desc: "Organizational leadership, budget management, project logistics planning, delegations, and itineraries.", 
-        color: "#a855f7", 
-        tab: "portfolio", 
-        icon: Layers 
-      },
-      { 
-        title: "Digital Control & Productivity Systems", 
-        desc: "Digital workspace organization (Notion, office suites), real-time reporting models, and streamlined administrative workflows.", 
-        color: "#34d399", 
-        tab: "portfolio", 
-        icon: ShieldCheck 
-      }
-    ],
-    tabs: { home: "Home", about: "Profile", portfolio: "Specialties", contact: "Contact" },
-    aboutTitle: "Operational Architecture & Strategy",
-    aboutSub: "High-performance solutions for modern administrative governance.",
-    aboutText1: "Specializing in structuring and refining the operational backbone of businesses and organizations. I transform slow or fragmented workflows into agile, measurable, and efficient systems.",
-    aboutText2: "By engineering Standard Operating Procedures (SOPs), structuring administrative models, and leveraging practical digital management tools, I ensure complete operational visibility.",
-    clearOpsCategory: "CORE SERVICES",
-    clearOpsTitle: "Operations & Back-Office Management",
-    clearOpsDesc: "Comprehensive administrative support, operational auditing, friction elimination, and process standardization to drive scalability and accuracy.",
-    sportsCategory: "LEADERSHIP & LOGISTICS",
-    sportsTitle: "Executive Leadership & Coordination",
-    sportsDesc: "Resource management, budget planning, strategic project execution, and seamless coordination across teams and stakeholders.",
-    techCategory: "SYSTEMS & PRODUCTIVITY",
-    techTitle: "Digital Control & Productivity Systems",
-    techDesc: "Deployment of structured workspaces, real-time administrative reporting models, and digital tools integration to optimize operational output.",
-    formTitle: "Initiate Contact",
-    formSub: "Detail your operational goals or bottlenecks to receive a tailored strategic plan.",
-    namePlaceholder: "Full Name or Organization",
-    emailPlaceholder: "you@example.com",
-    msgPlaceholder: "Briefly outline the operational bottlenecks or workflows you want to optimize...",
-    sendBtn: "Dispatch Message",
-    sentMsg: "Message staged successfully! Opening default email client."
-  }
+/* =========================================================
+   ROCKET TRANSITION
+   NO CAMBIAR
+========================================================= */
+
+function RocketTransition({
+  active,
+  onFinished,
+}: {
+  active: boolean;
+  onFinished: () => void;
+}) {
+  useEffect(() => {
+    if (!active) return;
+
+    const timer = setTimeout(() => {
+      onFinished();
+    }, 2100);
+
+    return () => clearTimeout(timer);
+  }, [active, onFinished]);
+
+  if (!active) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        background:
+          "radial-gradient(circle at center, #111827 0%, #030308 65%)",
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {Array.from({ length: 45 }).map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{
+            x: Math.random() * 1200 - 600,
+            y: Math.random() * 800 - 400,
+            opacity: 0,
+          }}
+          animate={{
+            x: 0,
+            y: 0,
+            opacity: [0, 1, 0],
+            scaleY: [1, 2.5, 5],
+          }}
+          transition={{
+            duration: 1.4 + Math.random() * 0.8,
+            delay: Math.random() * 0.4,
+            ease: "easeIn",
+          }}
+          style={{
+            position: "absolute",
+            width: "2px",
+            height: `${3 + Math.random() * 12}px`,
+            background: "#fff",
+            borderRadius: "999px",
+          }}
+        />
+      ))}
+
+      <motion.div
+        initial={{
+          scale: 0.5,
+          y: 180,
+          opacity: 0,
+        }}
+        animate={{
+          scale: [0.7, 1, 1.08],
+          y: [180, 0, -500],
+          opacity: [0, 1, 1],
+        }}
+        transition={{
+          duration: 2,
+          ease: [0.16, 1, 0.3, 1],
+        }}
+        style={{
+          position: "relative",
+          zIndex: 10,
+          fontSize: "80px",
+          filter:
+            "drop-shadow(0 0 30px rgba(255,255,255,.35))",
+        }}
+      >
+        🚀
+      </motion.div>
+
+      <motion.div
+        initial={{
+          width: 0,
+          opacity: 0,
+        }}
+        animate={{
+          width: "280px",
+          opacity: [0, 0.8, 0],
+        }}
+        transition={{
+          duration: 1.8,
+          ease: "easeOut",
+        }}
+        style={{
+          position: "absolute",
+          bottom: "30%",
+          height: "4px",
+          borderRadius: "999px",
+          background:
+            "linear-gradient(90deg, transparent, #38bdf8, transparent)",
+          filter: "blur(2px)",
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{
+          opacity: [0, 1, 0],
+          y: [20, 0, -20],
+        }}
+        transition={{
+          duration: 1.6,
+          delay: 0.25,
+        }}
+        style={{
+          position: "absolute",
+          bottom: "22%",
+          fontSize: "11px",
+          fontFamily: "monospace",
+          letterSpacing: ".25em",
+          color: "#93c5fd",
+          textTransform: "uppercase",
+        }}
+      >
+        Entrando al espacio
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* =========================================================
+   SPACE EXPERIENCE
+   NUEVA VERSION
+========================================================= */
+
+type Message = {
+  id: number;
+  name: string;
+  message: string;
+  angle: number;
+  radius: number;
 };
 
-export default function App() {
-  const [tab, setTab] = useState<"home" | "about" | "portfolio" | "contact">("home");
-  const [lang, setLang] = useState<"es" | "en">("es");
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+function SpaceExperience({
+  lang,
+  onBack,
+}: {
+  lang: "es" | "en";
+  onBack: () => void;
+}) {
+  const [selected, setSelected] =
+    useState<Message | null>(null);
 
-  const t = content[lang];
+  const [showMessageForm, setShowMessageForm] =
+    useState(false);
 
-  const pageVariants = {
-    hidden: { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
-    exit: { opacity: 0, y: -8, transition: { duration: 0.2 } }
-  };
+  const [messageName, setMessageName] =
+    useState("");
 
-  const glassBoxStyle: React.CSSProperties = {
-    background: "rgba(10, 12, 22, 0.75)",
-    backdropFilter: "blur(28px)",
-    WebkitBackdropFilter: "blur(28px)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    borderRadius: "24px",
-    padding: "40px 36px",
-    boxShadow: "0 25px 50px rgba(0, 0, 0, 0.6)"
-  };
+  const [messageText, setMessageText] =
+    useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      const mailtoUrl = `mailto:contacto@jimmycornejo.com?subject=Contacto desde Web - ${encodeURIComponent(formData.name)}&body=${encodeURIComponent(formData.message)} (Responder a:${encodeURIComponent(formData.email)})`;
-      window.location.href = mailtoUrl;
-    }, 800);
+  const [activeTab, setActiveTab] =
+    useState<"orbit" | "about">("orbit");
+
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1,
+      name: "Carlos",
+      message:
+        lang === "es"
+          ? "Qué chiva quedó este espacio."
+          : "This space is really cool.",
+      angle: 20,
+      radius: 185,
+    },
+    {
+      id: 2,
+      name: "Andrea",
+      message:
+        lang === "es"
+          ? "Me encantó la idea 🚀"
+          : "I love the idea 🚀",
+      angle: 105,
+      radius: 225,
+    },
+    {
+      id: 3,
+      name: "Marco",
+      message:
+        lang === "es"
+          ? "Muchos éxitos Jimmy."
+          : "Wishing you the best Jimmy.",
+      angle: 190,
+      radius: 205,
+    },
+    {
+      id: 4,
+      name: "Sofi",
+      message:
+        lang === "es"
+          ? "Saludos desde aquí ✨"
+          : "Greetings from here ✨",
+      angle: 280,
+      radius: 225,
+    },
+  ]);
+
+  const text =
+    lang === "es"
+      ? {
+          eyebrow: "PERSONAL TRANSMISSION",
+          title: "Mi espacio.",
+          description:
+            "No todo tiene que ser trabajo. Este es el rincón más personal de mi espacio digital.",
+          orbit: "Órbita",
+          about: "La idea",
+          orbitTitle: "Personas que pasaron por aquí",
+          orbitDescription:
+            "Cada estrella representa una señal dejada por alguien que visitó este espacio.",
+          leave: "Dejar una señal",
+          back: "Volver",
+          visitors: "señales activas",
+          signal: "SEÑAL RECIBIDA",
+          close: "Cerrar",
+          newSignal: "NUEVA SEÑAL",
+          name: "Tu nombre",
+          message: "Escribe algo...",
+          publish: "Enviar señal",
+          empty:
+            "Tu mensaje aparecerá aquí como una nueva estrella.",
+          ideaTitle: "Un espacio sin propósito específico.",
+          ideaText:
+            "Quería que mi sitio tuviera un lugar que no hablara de servicios, experiencia o trabajo. Simplemente un pequeño universo donde las personas pudieran dejar una señal.",
+          ideaQuote:
+            "Internet también puede sentirse como un lugar.",
+          status: "SISTEMA ONLINE",
+        }
+      : {
+          eyebrow: "PERSONAL TRANSMISSION",
+          title: "My space.",
+          description:
+            "Not everything has to be about work. This is the more personal corner of my digital space.",
+          orbit: "Orbit",
+          about: "The idea",
+          orbitTitle: "People who passed through",
+          orbitDescription:
+            "Every star represents a signal left by someone who visited this space.",
+          leave: "Leave a signal",
+          back: "Back",
+          visitors: "active signals",
+          signal: "SIGNAL RECEIVED",
+          close: "Close",
+          newSignal: "NEW SIGNAL",
+          name: "Your name",
+          message: "Write something...",
+          publish: "Send signal",
+          empty:
+            "Your message will appear here as a new star.",
+          ideaTitle: "A space without a specific purpose.",
+          ideaText:
+            "I wanted my site to have a place that wasn't about services, experience or work. Just a small universe where people could leave a signal.",
+          ideaQuote:
+            "The internet can also feel like a place.",
+          status: "SYSTEM ONLINE",
+        };
+
+  const submitMessage = () => {
+    if (!messageName.trim() || !messageText.trim()) return;
+
+    const newMessage: Message = {
+      id: Date.now(),
+      name: messageName.trim(),
+      message: messageText.trim(),
+      angle: Math.random() * 360,
+      radius: 160 + Math.random() * 90,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+
+    setMessageName("");
+    setMessageText("");
+    setShowMessageForm(false);
   };
 
   return (
-    <div style={{
-      position: "relative",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#030308",
-      color: "#f8fafc",
-      fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-    }}>
-      <LumaStarfieldCanvas />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{
+        minHeight: "100vh",
+        position: "relative",
+        zIndex: 5,
+        overflow: "hidden",
+      }}
+    >
+      {/* ambient glow */}
 
-      <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "36px 24px", width: "100%", position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          position: "fixed",
+          width: "600px",
+          height: "600px",
+          borderRadius: "50%",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          background:
+            "radial-gradient(circle, rgba(37,99,235,.10), rgba(37,99,235,.025) 35%, transparent 70%)",
+          filter: "blur(10px)",
+          pointerEvents: "none",
+        }}
+      />
 
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "48px" }}>
-          <div onClick={() => setTab("home")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{
-              fontSize: "20px",
-              fontWeight: "900",
-              color: "#ffffff",
-              letterSpacing: "0.1em",
-              background: "linear-gradient(135deg, #ffffff 0%, #38bdf8 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent"
-            }}>
-              JC
+      <div
+        style={{
+          maxWidth: "1240px",
+          minHeight: "100vh",
+          margin: "0 auto",
+          padding: "26px 28px 50px",
+          position: "relative",
+        }}
+      >
+        {/* TOP BAR */}
+
+        <header
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            position: "relative",
+            zIndex: 20,
+          }}
+        >
+          <button
+            onClick={onBack}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "9px",
+              border:
+                "1px solid rgba(255,255,255,.11)",
+              background:
+                "rgba(255,255,255,.035)",
+              color: "#cbd5e1",
+              borderRadius: "999px",
+              padding: "9px 15px",
+              cursor: "pointer",
+              backdropFilter: "blur(20px)",
+              fontSize: "12px",
+            }}
+          >
+            ← {text.back}
+          </button>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+            }}
+          >
+            <div
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: "#60a5fa",
+                boxShadow:
+                  "0 0 15px rgba(96,165,250,.9)",
+              }}
+            />
+
+            <span
+              style={{
+                fontFamily: "monospace",
+                fontSize: "9px",
+                letterSpacing: ".2em",
+                color: "#64748b",
+              }}
+            >
+              {text.status}
             </span>
-          </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-            <nav style={{ display: "flex", gap: "24px" }}>
-              {(["home", "about", "portfolio"] as const).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setTab(key)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: tab === key ? "#ffffff" : "#94a3b8",
-                    fontSize: "14px",
-                    fontWeight: tab === key ? "600" : "500",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    padding: "4px 0",
-                    borderBottom: tab === key ? "2px solid #38bdf8" : "2px solid transparent"
-                  }}
-                >
-                  {t.tabs[key]}
-                </button>
-              ))}
-            </nav>
-
-            <button
-              onClick={() => setTab("contact")}
+            <span
               style={{
-                background: tab === "contact" ? "#ffffff" : "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                color: tab === "contact" ? "#000000" : "#ffffff",
-                padding: "8px 20px",
-                borderRadius: "100px",
-                fontSize: "13px",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.25s ease"
+                fontFamily: "monospace",
+                fontSize: "9px",
+                letterSpacing: ".2em",
+                color: "#475569",
               }}
             >
-              {t.tabs.contact}
-            </button>
-
-            <button
-              onClick={() => setLang(lang === "es" ? "en" : "es")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                padding: "6px 12px",
-                borderRadius: "8px",
-                color: "#38bdf8",
-                fontSize: "12px",
-                fontWeight: "600",
-                cursor: "pointer",
-                fontFamily: "monospace"
-              }}
-            >
-              <Globe size={13} />
-              {lang.toUpperCase()}
-            </button>
+              / JC-SPACE
+            </span>
           </div>
         </header>
 
-        <AnimatePresence mode="wait">
-          {tab === "home" && (
-            <motion.main key="home" variants={pageVariants} initial="hidden" animate="visible" exit="exit" style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "40px", alignItems: "center" }}>
-                <div>
-                  <h1 style={{ fontSize: "52px", fontWeight: "900", color: "#ffffff", margin: "0 0 6px 0", lineHeight: "1.05", letterSpacing: "0.02em" }}>
-                    {t.nameTitle}
-                  </h1>
+        {/* HERO */}
 
-                  <div style={{ fontSize: "16px", fontWeight: "600", color: "#64748b", margin: "0 0 16px 0", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                    {t.subBadge}
+        <section
+          style={{
+            maxWidth: "850px",
+            margin: "80px auto 0",
+            textAlign: "center",
+            position: "relative",
+            zIndex: 5,
+          }}
+        >
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 12,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.6,
+            }}
+            style={{
+              fontFamily: "monospace",
+              fontSize: "9px",
+              letterSpacing: ".34em",
+              color: "#60a5fa",
+              marginBottom: "20px",
+            }}
+          >
+            {text.eyebrow}
+          </motion.div>
+
+          <motion.h1
+            initial={{
+              opacity: 0,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              delay: 0.08,
+              duration: 0.7,
+            }}
+            style={{
+              margin: 0,
+              fontSize:
+                "clamp(58px, 10vw, 110px)",
+              lineHeight: ".86",
+              letterSpacing: "-.075em",
+              fontWeight: 850,
+              background:
+                "linear-gradient(180deg, #ffffff 0%, #cbd5e1 55%, #64748b 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            {text.title}
+          </motion.h1>
+
+          <motion.p
+            initial={{
+              opacity: 0,
+              y: 15,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              delay: 0.18,
+              duration: 0.7,
+            }}
+            style={{
+              maxWidth: "590px",
+              margin: "25px auto 0",
+              color: "#94a3b8",
+              lineHeight: 1.75,
+              fontSize: "15px",
+            }}
+          >
+            {text.description}
+          </motion.p>
+        </section>
+
+        {/* TABS */}
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "5px",
+            marginTop: "38px",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
+          {[
+            ["orbit", text.orbit],
+            ["about", text.about],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() =>
+                setActiveTab(
+                  key as "orbit" | "about"
+                )
+              }
+              style={{
+                border:
+                  activeTab === key
+                    ? "1px solid rgba(147,197,253,.25)"
+                    : "1px solid transparent",
+                background:
+                  activeTab === key
+                    ? "rgba(96,165,250,.08)"
+                    : "transparent",
+                color:
+                  activeTab === key
+                    ? "#dbeafe"
+                    : "#64748b",
+                borderRadius: "999px",
+                padding: "9px 17px",
+                cursor: "pointer",
+                fontSize: "11px",
+                transition: "all .25s",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {activeTab === "orbit" ? (
+            <motion.section
+              key="orbit"
+              initial={{
+                opacity: 0,
+                y: 15,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: -15,
+              }}
+              transition={{
+                duration: 0.4,
+              }}
+              style={{
+                position: "relative",
+              }}
+            >
+              {/* ORBIT STAGE */}
+
+              <div
+                style={{
+                  height: "650px",
+                  marginTop: "-10px",
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {/* outer orbit */}
+
+                <motion.div
+                  animate={{
+                    rotate: 360,
+                  }}
+                  transition={{
+                    duration: 100,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{
+                    position: "absolute",
+                    width:
+                      "min(600px, 78vw)",
+                    height:
+                      "min(600px, 78vw)",
+                    borderRadius: "50%",
+                    border:
+                      "1px solid rgba(148,163,184,.10)",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "#bfdbfe",
+                      boxShadow:
+                        "0 0 20px #60a5fa",
+                      top: "50%",
+                      right: "-4px",
+                      transform:
+                        "translateY(-50%)",
+                    }}
+                  />
+                </motion.div>
+
+                {/* middle orbit */}
+
+                <motion.div
+                  animate={{
+                    rotate: -360,
+                  }}
+                  transition={{
+                    duration: 55,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{
+                    position: "absolute",
+                    width:
+                      "min(470px, 62vw)",
+                    height:
+                      "min(470px, 62vw)",
+                    borderRadius: "50%",
+                    border:
+                      "1px dashed rgba(96,165,250,.15)",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      width: "5px",
+                      height: "5px",
+                      borderRadius: "50%",
+                      background: "#93c5fd",
+                      boxShadow:
+                        "0 0 14px #60a5fa",
+                      bottom: "10%",
+                      left: "10%",
+                    }}
+                  />
+                </motion.div>
+
+                {/* inner orbit */}
+
+                <div
+                  style={{
+                    position: "absolute",
+                    width:
+                      "min(330px, 45vw)",
+                    height:
+                      "min(330px, 45vw)",
+                    borderRadius: "50%",
+                    border:
+                      "1px solid rgba(255,255,255,.06)",
+                  }}
+                />
+
+                {/* central planet */}
+
+                <motion.div
+                  animate={{
+                    y: [0, -8, 0],
+                    scale: [1, 1.015, 1],
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  style={{
+                    position: "absolute",
+                    width: "155px",
+                    height: "155px",
+                    borderRadius: "50%",
+                    background:
+                      "radial-gradient(circle at 33% 27%, #ffffff 0%, #bfdbfe 8%, #60a5fa 25%, #2563eb 47%, #172554 72%, #020617 100%)",
+                    boxShadow:
+                      "0 0 50px rgba(59,130,246,.24), 0 0 130px rgba(37,99,235,.10), inset -28px -20px 35px rgba(0,0,0,.52)",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: "13px",
+                      borderRadius: "50%",
+                      border:
+                        "1px solid rgba(255,255,255,.12)",
+                    }}
+                  />
+                </motion.div>
+
+                {/* central information */}
+
+                <div
+                  style={{
+                    position: "absolute",
+                    textAlign: "center",
+                    zIndex: 5,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: "9px",
+                      letterSpacing: ".24em",
+                      color: "#dbeafe",
+                    }}
+                  >
+                    JIMMY'S SPACE
                   </div>
 
-                  <h2 style={{ fontSize: "22px", fontWeight: "600", color: "#38bdf8", margin: "0 0 20px 0", lineHeight: "1.3" }}>
-                    {t.jobTitle}
-                  </h2>
-
-                  <p style={{ color: "#cbd5e1", fontSize: "17px", lineHeight: "1.6", margin: 0, fontWeight: "400", maxWidth: "540px" }}>
-                    {t.bio}
-                  </p>
+                  <div
+                    style={{
+                      marginTop: "9px",
+                      fontSize: "10px",
+                      color: "#64748b",
+                    }}
+                  >
+                    {messages.length}{" "}
+                    {text.visitors}
+                  </div>
                 </div>
 
-                <Profile3DCard />
-              </div>
+                {/* visitor stars */}
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
-                {t.pillars.map((item, idx) => {
-                  const IconComp = item.icon;
+                {messages.map((message, index) => {
+                  const rad =
+                    (message.angle *
+                      Math.PI) /
+                    180;
+
+                  const x =
+                    Math.cos(rad) *
+                    message.radius;
+
+                  const y =
+                    Math.sin(rad) *
+                    message.radius;
+
                   return (
                     <motion.div
-                      key={idx}
-                      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                      onClick={() => setTab(item.tab as "home" | "about" | "portfolio" | "contact")}
+                      key={message.id}
+                      initial={{
+                        opacity: 0,
+                        scale: 0,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                      }}
+                      transition={{
+                        delay:
+                          0.15 +
+                          index * 0.1,
+                        type: "spring",
+                        stiffness: 180,
+                        damping: 16,
+                      }}
                       style={{
-                        background: "rgba(15, 23, 42, 0.65)",
-                        backdropFilter: "blur(20px)",
-                        WebkitBackdropFilter: "blur(20px)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                        borderRadius: "20px",
-                        padding: "24px",
-                        cursor: "pointer",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "16px",
-                        boxShadow: "0 15px 30px rgba(0,0,0,0.3)"
+                        position:
+                          "absolute",
+                        transform: `translate(${x}px, ${y}px)`,
+                        zIndex: 8,
                       }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "10px",
-                          background: item.color + "1A",
-                          border: "1px solid " + item.color + "50",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: item.color
-                        }}>
-                          <IconComp size={20} />
-                        </div>
-                        <ArrowUpRight size={18} color="#64748b" />
-                      </div>
+                      <motion.button
+                        whileHover={{
+                          scale: 1.35,
+                        }}
+                        whileTap={{
+                          scale: 0.9,
+                        }}
+                        onClick={() =>
+                          setSelected(
+                            message
+                          )
+                        }
+                        style={{
+                          width: "45px",
+                          height: "45px",
+                          borderRadius:
+                            "50%",
+                          border:
+                            "1px solid rgba(191,219,254,.35)",
+                          background:
+                            "radial-gradient(circle, #fff 0%, #bfdbfe 12%, #60a5fa 28%, #2563eb 48%, rgba(37,99,235,.12) 70%, transparent 73%)",
+                          boxShadow:
+                            "0 0 25px rgba(96,165,250,.5)",
+                          cursor:
+                            "pointer",
+                          display: "block",
+                        }}
+                      />
 
-                      <div>
-                        <div style={{ fontSize: "16px", fontWeight: "700", color: "#ffffff", marginBottom: "8px" }}>
-                          {item.title}
-                        </div>
-                        <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8", lineHeight: "1.5", fontWeight: "400" }}>
-                          {item.desc}
-                        </p>
+                      <div
+                        style={{
+                          position:
+                            "absolute",
+                          top: "51px",
+                          left: "50%",
+                          transform:
+                            "translateX(-50%)",
+                          whiteSpace:
+                            "nowrap",
+                          color: "#64748b",
+                          fontFamily:
+                            "monospace",
+                          fontSize: "9px",
+                          letterSpacing:
+                            ".05em",
+                          pointerEvents:
+                            "none",
+                        }}
+                      >
+                        {message.name}
                       </div>
                     </motion.div>
                   );
                 })}
-              </div>
-            </motion.main>
-          )}
 
-          {tab === "about" && (
-            <motion.main key="about" variants={pageVariants} initial="hidden" animate="visible" exit="exit">
-              <div style={glassBoxStyle}>
-                <div style={{ fontSize: "12px", fontFamily: "monospace", color: "#38bdf8", letterSpacing: "0.15em", marginBottom: "12px", fontWeight: "600" }}>
-                  PERFIL PROFESIONAL
-                </div>
-                <h2 style={{ fontSize: "32px", fontWeight: "800", color: "#ffffff", marginTop: 0, marginBottom: "8px" }}>
-                  {t.aboutTitle}
-                </h2>
-                <div style={{ fontSize: "16px", color: "#38bdf8", marginBottom: "24px", fontWeight: "500" }}>
-                  {t.aboutSub}
-                </div>
-                <p style={{ color: "#e2e8f0", fontSize: "15px", lineHeight: "1.8", marginBottom: "16px", fontWeight: "400" }}>
-                  {t.aboutText1}
-                </p>
-                <p style={{ color: "#94a3b8", fontSize: "15px", lineHeight: "1.8", margin: 0, fontWeight: "400" }}>
-                  {t.aboutText2}
-                </p>
-              </div>
-            </motion.main>
-          )}
+                {/* CTA */}
 
-          {tab === "portfolio" && (
-            <motion.main key="portfolio" variants={pageVariants} initial="hidden" animate="visible" exit="exit" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div style={glassBoxStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-                  <Cpu size={16} color="#38bdf8" />
-                  <span style={{ fontSize: "12px", fontFamily: "monospace", color: "#38bdf8", letterSpacing: "1px", fontWeight: "600" }}>{t.clearOpsCategory}</span>
-                </div>
-                <h3 style={{ fontSize: "22px", fontWeight: "700", color: "#ffffff", margin: "0 0 10px 0" }}>{t.clearOpsTitle}</h3>
-                <p style={{ color: "#cbd5e1", fontSize: "15px", margin: 0, lineHeight: "1.7", fontWeight: "400" }}>
-                  {t.clearOpsDesc}
-                </p>
-              </div>
-
-              <div style={glassBoxStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-                  <Building2 size={16} color="#a855f7" />
-                  <span style={{ fontSize: "12px", fontFamily: "monospace", color: "#a855f7", letterSpacing: "1px", fontWeight: "600" }}>{t.sportsCategory}</span>
-                </div>
-                <h3 style={{ fontSize: "22px", fontWeight: "700", color: "#ffffff", margin: "0 0 10px 0" }}>{t.sportsTitle}</h3>
-                <p style={{ color: "#cbd5e1", fontSize: "15px", margin: 0, lineHeight: "1.7", fontWeight: "400" }}>
-                  {t.sportsDesc}
-                </p>
+                <motion.button
+                  whileHover={{
+                    y: -4,
+                    scale: 1.03,
+                  }}
+                  whileTap={{
+                    scale: 0.97,
+                  }}
+                  onClick={() =>
+                    setShowMessageForm(
+                      true
+                    )
+                  }
+                  style={{
+                    position: "absolute",
+                    bottom: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "9px",
+                    border:
+                      "1px solid rgba(147,197,253,.2)",
+                    background:
+                      "rgba(8,15,30,.78)",
+                    color: "#dbeafe",
+                    borderRadius:
+                      "999px",
+                    padding:
+                      "13px 21px",
+                    cursor: "pointer",
+                    backdropFilter:
+                      "blur(20px)",
+                    boxShadow:
+                      "0 20px 60px rgba(0,0,0,.35)",
+                    fontSize: "12px",
+                  }}
+                >
+                  <Sparkles size={15} />
+                  {text.leave}
+                </motion.button>
               </div>
 
-              <div style={glassBoxStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-                  <ShieldCheck size={16} color="#34d399" />
-                  <span style={{ fontSize: "12px", fontFamily: "monospace", color: "#34d399", letterSpacing: "1px", fontWeight: "600" }}>{t.techCategory}</span>
+              {/* INFO */}
+
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "-4px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "13px",
+                    color: "#e2e8f0",
+                    fontWeight: 650,
+                  }}
+                >
+                  {text.orbitTitle}
                 </div>
-                <h3 style={{ fontSize: "22px", fontWeight: "700", color: "#ffffff", margin: "0 0 10px 0" }}>{t.techTitle}</h3>
-                <p style={{ color: "#cbd5e1", fontSize: "15px", margin: 0, lineHeight: "1.7", fontWeight: "400" }}>
-                  {t.techDesc}
-                </p>
+
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#64748b",
+                    marginTop: "6px",
+                  }}
+                >
+                  {text.orbitDescription}
+                </div>
               </div>
-            </motion.main>
-          )}
-
-          {tab === "contact" && (
-            <motion.main key="contact" variants={pageVariants} initial="hidden" animate="visible" exit="exit">
-              <div style={glassBoxStyle}>
-                <h2 style={{ fontSize: "30px", fontWeight: "800", color: "#ffffff", marginTop: 0, marginBottom: "8px" }}>
-                  {t.formTitle}
-                </h2>
-                <p style={{ color: "#94a3b8", fontSize: "15px", lineHeight: "1.6", marginBottom: "28px", fontWeight: "400" }}>
-                  {t.formSub}
-                </p>
-
-                {submitted ? (
-                  <div style={{ padding: "20px", borderRadius: "12px", background: "rgba(52, 211, 153, 0.1)", border: "1px solid rgba(52, 211, 153, 0.25)", color: "#34d399", display: "flex", alignItems: "center", gap: "12px", fontSize: "14px" }}>
-                    <CheckCircle2 size={20} />
-                    {t.sentMsg}
+            </motion.section>
+          ) : (
+            <motion.section
+              key="about-space"
+              initial={{
+                opacity: 0,
+                y: 15,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: -15,
+              }}
+              style={{
+                maxWidth: "820px",
+                margin: "80px auto 0",
+                paddingBottom: "80px",
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "1fr 1fr",
+                  gap: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    minHeight: "360px",
+                    borderRadius: "30px",
+                    border:
+                      "1px solid rgba(255,255,255,.09)",
+                    background:
+                      "linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.018))",
+                    padding: "32px",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily:
+                        "monospace",
+                      fontSize: "9px",
+                      letterSpacing:
+                        ".25em",
+                      color: "#60a5fa",
+                    }}
+                  >
+                    01 / THE IDEA
                   </div>
-                ) : (
-                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <input
-                      type="text"
-                      required
-                      placeholder={t.namePlaceholder}
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", padding: "14px 18px", color: "#fff", fontSize: "14px", outline: "none" }}
+
+                  <h2
+                    style={{
+                      fontSize:
+                        "clamp(27px, 4vw, 42px)",
+                      lineHeight: 1.05,
+                      letterSpacing:
+                        "-.045em",
+                      margin:
+                        "25px 0 18px",
+                      color: "#fff",
+                    }}
+                  >
+                    {text.ideaTitle}
+                  </h2>
+
+                  <p
+                    style={{
+                      color: "#94a3b8",
+                      lineHeight: 1.75,
+                      fontSize: "14px",
+                    }}
+                  >
+                    {text.ideaText}
+                  </p>
+
+                  <div
+                    style={{
+                      position:
+                        "absolute",
+                      width: "180px",
+                      height: "180px",
+                      borderRadius:
+                        "50%",
+                      right: "-80px",
+                      bottom: "-80px",
+                      background:
+                        "radial-gradient(circle, rgba(59,130,246,.16), transparent 70%)",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    minHeight: "360px",
+                    borderRadius: "30px",
+                    border:
+                      "1px solid rgba(255,255,255,.09)",
+                    background:
+                      "rgba(255,255,255,.025)",
+                    padding: "32px",
+                    display: "flex",
+                    flexDirection:
+                      "column",
+                    justifyContent:
+                      "space-between",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily:
+                        "monospace",
+                      fontSize: "9px",
+                      letterSpacing:
+                        ".25em",
+                      color: "#64748b",
+                    }}
+                  >
+                    02 / A THOUGHT
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize:
+                        "clamp(25px, 4vw, 38px)",
+                      lineHeight: 1.08,
+                      letterSpacing:
+                        "-.045em",
+                      color: "#e2e8f0",
+                      fontWeight: 700,
+                    }}
+                  >
+                    “{text.ideaQuote}”
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems:
+                        "center",
+                      gap: "10px",
+                      color: "#64748b",
+                      fontSize: "11px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "6px",
+                        height: "6px",
+                        borderRadius:
+                          "50%",
+                        background:
+                          "#60a5fa",
+                        boxShadow:
+                          "0 0 12px #60a5fa",
+                      }}
                     />
-                    <input
-                      type="email"
-                      required
-                      placeholder={t.emailPlaceholder}
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", padding: "14px 18px", color: "#fff", fontSize: "14px", outline: "none" }}
-                    />
-                    <textarea
-                      rows={4}
-                      required
-                      placeholder={t.msgPlaceholder}
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "10px", padding: "14px 18px", color: "#fff", fontSize: "14px", outline: "none", resize: "none" }}
-                    />
-                    <button
-                      type="submit"
-                      style={{ background: "#ffffff", color: "#000000", border: "none", padding: "14px 28px", borderRadius: "100px", fontSize: "14px", fontWeight: "600", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "8px" }}
-                    >
-                      <Send size={15} />
-                      {t.sendBtn}
-                    </button>
-                  </form>
-                )}
+                    JIMMY CORNEJO
+                  </div>
+                </div>
               </div>
-            </motion.main>
+            </motion.section>
           )}
-
         </AnimatePresence>
-
-        <footer style={{ marginTop: "auto", paddingTop: "36px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: "#64748b", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <span>JIMMY CORNEJO — ESPACIO DIGITAL</span>
-          <span style={{ fontFamily: "monospace" }}>2026</span>
-        </footer>
-
       </div>
+
+      {/* MESSAGE VIEW */}
+
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() =>
+              setSelected(null)
+            }
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 500,
+              background:
+                "rgba(2,6,23,.76)",
+              backdropFilter:
+                "blur(18px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "25px",
+            }}
+          >
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.85,
+                y: 25,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 220,
+                damping: 20,
+              }}
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+              style={{
+                width:
+                  "min(450px, 100%)",
+                borderRadius: "30px",
+                border:
+                  "1px solid rgba(255,255,255,.12)",
+                background:
+                  "rgba(8,15,30,.96)",
+                padding: "32px",
+                boxShadow:
+                  "0 40px 120px rgba(0,0,0,.7)",
+                position: "relative",
+              }}
+            >
+              <button
+                onClick={() =>
+                  setSelected(null)
+                }
+                style={{
+                  position:
+                    "absolute",
+                  top: "20px",
+                  right: "20px",
+                  border: "none",
+                  background:
+                    "transparent",
+                  color: "#64748b",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              <div
+                style={{
+                  width: "55px",
+                  height: "55px",
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, #fff, #60a5fa 35%, #1d4ed8 65%, transparent 70%)",
+                  boxShadow:
+                    "0 0 35px rgba(96,165,250,.55)",
+                  marginBottom: "25px",
+                }}
+              />
+
+              <div
+                style={{
+                  fontFamily:
+                    "monospace",
+                  color: "#60a5fa",
+                  fontSize: "9px",
+                  letterSpacing:
+                    ".22em",
+                }}
+              >
+                {text.signal}
+              </div>
+
+              <h2
+                style={{
+                  color: "#fff",
+                  fontSize: "28px",
+                  letterSpacing:
+                    "-.04em",
+                  margin:
+                    "14px 0 10px",
+                }}
+              >
+                {selected.name}
+              </h2>
+
+              <p
+                style={{
+                  color: "#cbd5e1",
+                  lineHeight: 1.75,
+                  fontSize: "15px",
+                  margin: 0,
+                }}
+              >
+                “{selected.message}”
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MESSAGE FORM */}
+
+      <AnimatePresence>
+        {showMessageForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() =>
+              setShowMessageForm(false)
+            }
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 600,
+              background:
+                "rgba(2,6,23,.8)",
+              backdropFilter:
+                "blur(18px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "25px",
+            }}
+          >
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.85,
+                y: 25,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                y: 0,
+              }}
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+              style={{
+                width:
+                  "min(480px, 100%)",
+                borderRadius: "30px",
+                border:
+                  "1px solid rgba(255,255,255,.12)",
+                background:
+                  "rgba(8,15,30,.97)",
+                padding: "34px",
+                boxShadow:
+                  "0 40px 120px rgba(0,0,0,.75)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  alignItems:
+                    "flex-start",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontFamily:
+                        "monospace",
+                      color: "#60a5fa",
+                      fontSize: "9px",
+                      letterSpacing:
+                        ".22em",
+                    }}
+                  >
+                    {text.newSignal}
+                  </div>
+
+                  <h2
+                    style={{
+                      color: "#fff",
+                      fontSize: "28px",
+                      letterSpacing:
+                        "-.045em",
+                      margin:
+                        "10px 0 0",
+                    }}
+                  >
+                    {text.leave}
+                  </h2>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setShowMessageForm(
+                      false
+                    )
+                  }
+                  style={{
+                    border: "none",
+                    background:
+                      "transparent",
+                    color: "#64748b",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  <X />
+                </button>
+              </div>
+
+              <p
+                style={{
+                  color: "#64748b",
+                  fontSize: "13px",
+                  lineHeight: 1.65,
+                  marginTop: "13px",
+                }}
+              >
+                {text.empty}
+              </p>
+
+              <input
+                value={messageName}
+                onChange={(e) =>
+                  setMessageName(
+                    e.target.value
+                  )
+                }
+                placeholder={text.name}
+                style={{
+                  width: "100%",
+                  boxSizing:
+                    "border-box",
+                  marginTop: "20px",
+                  padding:
+                    "14px 16px",
+                  borderRadius:
+                    "14px",
+                  border:
+                    "1px solid rgba(255,255,255,.1)",
+                  background:
+                    "rgba(255,255,255,.04)",
+                  color: "#fff",
+                  outline: "none",
+                  fontSize: "14px",
+                }}
+              />
+
+              <textarea
+                value={messageText}
+                onChange={(e) =>
+                  setMessageText(
+                    e.target.value
+                  )
+                }
+                placeholder={text.message}
+                rows={4}
+                style={{
+                  width: "100%",
+                  boxSizing:
+                    "border-box",
+                  marginTop: "12px",
+                  padding:
+                    "14px 16px",
+                  borderRadius:
+                    "14px",
+                  border:
+                    "1px solid rgba(255,255,255,.1)",
+                  background:
+                    "rgba(255,255,255,.04)",
+                  color: "#fff",
+                  outline: "none",
+                  resize: "none",
+                  fontFamily:
+                    "inherit",
+                  fontSize: "14px",
+                }}
+              />
+
+              <button
+                onClick={
+                  submitMessage
+                }
+                style={{
+                  width: "100%",
+                  marginTop: "14px",
+                  padding: "15px",
+                  borderRadius:
+                    "999px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #fff, #dbeafe)",
+                  color: "#020617",
+                  fontWeight: 750,
+                  cursor:
+                    "pointer",
+                  display: "flex",
+                  justifyContent:
+                    "center",
+                  alignItems:
+                    "center",
+                  gap: "8px",
+                  fontSize: "13px",
+                }}
+              >
+                <Send size={15} />
+                {text.publish}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/* =========================================================
+   MAIN APP
+========================================================= */
+
+export default function App() {
+  const [lang, setLang] =
+    useState<"es" | "en">("es");
+
+  const [page, setPage] =
+    useState<
+      "home" | "work" | "about" | "space" | "contact"
+    >("home");
+
+  const [rocket, setRocket] =
+    useState(false);
+
+  const content = {
+    es: {
+      small: "MI ESPACIO DIGITAL",
+
+      name: "JIMMY CORNEJO",
+
+      intro:
+        "Negocios, operaciones y soluciones que funcionan.",
+
+      work: "Explorar mi trabajo",
+
+      space: "Entrar al espacio",
+
+      workTitle: "Mi trabajo",
+
+      workDescription:
+        "Trabajo en la intersección entre operaciones, organización, digitalización y resolución de problemas.",
+
+      areas: [
+        "Operaciones",
+        "Digitalización",
+        "Procesos",
+        "Coordinación",
+      ],
+
+      about: "Sobre mí",
+
+      aboutTitle:
+        "Construir orden donde antes había fricción.",
+
+      aboutText:
+        "Me interesa entender cómo funcionan realmente las cosas, encontrar lo que está frenando una operación y convertirlo en algo más claro, simple y eficiente.",
+
+      contact: "Contacto",
+
+      contactTitle: "Hablemos.",
+
+      contactText:
+        "Si tienes una operación que necesita orden, una idea que necesita estructura o simplemente quieres conectar, escríbeme.",
+
+      send: "Enviar mensaje",
+
+      back: "Volver",
+
+      currently: "Actualmente",
+    },
+
+    en: {
+      small: "MY DIGITAL SPACE",
+
+      name: "JIMMY CORNEJO",
+
+      intro:
+        "Business, operations and solutions that work.",
+
+      work: "Explore my work",
+
+      space: "Enter the space",
+
+      workTitle: "My work",
+
+      workDescription:
+        "I work at the intersection of operations, organization, digitalization and problem solving.",
+
+      areas: [
+        "Operations",
+        "Digitalization",
+        "Processes",
+        "Coordination",
+      ],
+
+      about: "About me",
+
+      aboutTitle:
+        "Building order where there used to be friction.",
+
+      aboutText:
+        "I like understanding how things actually work, finding what is slowing an operation down, and turning it into something clearer, simpler and more efficient.",
+
+      contact: "Contact",
+
+      contactTitle: "Let's talk.",
+
+      contactText:
+        "If you have an operation that needs structure, an idea that needs direction, or simply want to connect, send me a message.",
+
+      send: "Send message",
+
+      back: "Back",
+
+      currently: "Currently",
+    },
+  };
+
+  const t = content[lang];
+
+  const startSpace = () => {
+    setRocket(true);
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#030308",
+        color: "#fff",
+        fontFamily:
+          "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        overflowX: "hidden",
+      }}
+    >
+      <LumaStarfieldCanvas />
+
+      <RocketTransition
+        active={rocket}
+        onFinished={() => {
+          setRocket(false);
+          setPage("space");
+        }}
+      />
+
+      {page === "space" ? (
+        <SpaceExperience
+          lang={lang}
+          onBack={() => setPage("home")}
+        />
+      ) : (
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            maxWidth: "1160px",
+            margin: "0 auto",
+            padding: "28px 28px 45px",
+            minHeight: "100vh",
+          }}
+        >
+          {/* HEADER */}
+
+          <header
+            style={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              alignItems: "center",
+            }}
+          >
+            <button
+              onClick={() =>
+                setPage("home")
+              }
+              style={{
+                border: "none",
+                background:
+                  "transparent",
+                color: "#fff",
+                cursor: "pointer",
+                textAlign: "left",
+                padding: 0,
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 900,
+                  letterSpacing:
+                    ".12em",
+                  fontSize: "17px",
+                }}
+              >
+                JC
+              </div>
+
+              <div
+                style={{
+                  fontSize: "8px",
+                  letterSpacing:
+                    ".2em",
+                  color: "#94a3b8",
+                  marginTop: "3px",
+                }}
+              >
+                DIGITAL SPACE
+              </div>
+            </button>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems:
+                  "center",
+                gap: "20px",
+              }}
+            >
+              <nav
+                style={{
+                  display: "flex",
+                  gap: "20px",
+                }}
+              >
+                {[
+                  ["home", "Inicio"],
+                  ["work", "Trabajo"],
+                  ["about", "Sobre mí"],
+                ].map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() =>
+                      setPage(
+                        key as
+                          | "home"
+                          | "work"
+                          | "about"
+                      )
+                    }
+                    style={{
+                      border: "none",
+                      background:
+                        "transparent",
+                      color:
+                        page === key
+                          ? "#fff"
+                          : "#64748b",
+                      cursor:
+                        "pointer",
+                      fontSize: "12px",
+                      padding: "5px 0",
+                    }}
+                  >
+                    {lang === "en"
+                      ? key === "home"
+                        ? "Home"
+                        : key === "work"
+                        ? "Work"
+                        : "About"
+                      : label}
+                  </button>
+                ))}
+              </nav>
+
+              <button
+                onClick={() =>
+                  setLang(
+                    lang === "es"
+                      ? "en"
+                      : "es"
+                  )
+                }
+                style={{
+                  border:
+                    "1px solid rgba(255,255,255,.12)",
+                  background:
+                    "rgba(255,255,255,.04)",
+                  color: "#cbd5e1",
+                  borderRadius:
+                    "999px",
+                  padding:
+                    "7px 11px",
+                  cursor:
+                    "pointer",
+                  fontFamily:
+                    "monospace",
+                  fontSize: "10px",
+                }}
+              >
+                {lang.toUpperCase()}
+              </button>
+            </div>
+          </header>
+
+          <AnimatePresence mode="wait">
+            {/* HOME */}
+
+            {page === "home" && (
+              <motion.main
+                key="home"
+                initial={{
+                  opacity: 0,
+                  y: 15,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -15,
+                }}
+                transition={{
+                  duration: 0.45,
+                }}
+              >
+                <section
+                  style={{
+                    minHeight:
+                      "calc(100vh - 110px)",
+                    display: "grid",
+                    gridTemplateColumns:
+                      "1fr 300px",
+                    alignItems:
+                      "center",
+                    gap: "80px",
+                  }}
+                >
+                  <div>
+                    <motion.div
+                      initial={{
+                        opacity: 0,
+                        y: 12,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        delay: 0.1,
+                      }}
+                      style={{
+                        color: "#93c5fd",
+                        fontFamily:
+                          "monospace",
+                        fontSize: "10px",
+                        letterSpacing:
+                          ".25em",
+                        marginBottom:
+                          "18px",
+                      }}
+                    >
+                      {t.small}
+                    </motion.div>
+
+                    <motion.h1
+                      initial={{
+                        opacity: 0,
+                        y: 20,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        delay: 0.15,
+                      }}
+                      style={{
+                        fontSize:
+                          "clamp(52px, 8vw, 92px)",
+                        lineHeight:
+                          ".9",
+                        letterSpacing:
+                          "-.065em",
+                        margin: 0,
+                        fontWeight:
+                          850,
+                        maxWidth:
+                          "760px",
+                      }}
+                    >
+                      {t.name}
+                    </motion.h1>
+
+                    <motion.p
+                      initial={{
+                        opacity: 0,
+                        y: 15,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        delay: 0.25,
+                      }}
+                      style={{
+                        margin:
+                          "27px 0 0",
+                        fontSize:
+                          "clamp(17px, 2vw, 21px)",
+                        lineHeight:
+                          1.55,
+                        color:
+                          "#94a3b8",
+                        maxWidth:
+                          "610px",
+                      }}
+                    >
+                      {t.intro}
+                    </motion.p>
+
+                    <motion.div
+                      initial={{
+                        opacity: 0,
+                        y: 20,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                      }}
+                      transition={{
+                        delay: 0.38,
+                      }}
+                      style={{
+                        display:
+                          "flex",
+                        gap: "12px",
+                        marginTop:
+                          "38px",
+                        flexWrap:
+                          "wrap",
+                      }}
+                    >
+                      <motion.button
+                        whileHover={{
+                          y: -5,
+                          rotateX: 4,
+                        }}
+                        whileTap={{
+                          scale: 0.97,
+                        }}
+                        onClick={() =>
+                          setPage(
+                            "work"
+                          )
+                        }
+                        style={{
+                          position:
+                            "relative",
+                          padding:
+                            "15px 22px",
+                          borderRadius:
+                            "16px",
+                          border:
+                            "1px solid rgba(255,255,255,.18)",
+                          background:
+                            "linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.04))",
+                          color: "#fff",
+                          cursor:
+                            "pointer",
+                          fontWeight:
+                            650,
+                          fontSize:
+                            "13px",
+                          display:
+                            "flex",
+                          alignItems:
+                            "center",
+                          gap: "10px",
+                          boxShadow:
+                            "0 15px 35px rgba(0,0,0,.25)",
+                          backdropFilter:
+                            "blur(15px)",
+                        }}
+                      >
+                        <BriefcaseBusiness
+                          size={15}
+                        />
+                        {t.work}
+                        <ArrowUpRight
+                          size={14}
+                        />
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{
+                          y: -7,
+                          scale: 1.02,
+                        }}
+                        whileTap={{
+                          scale: 0.97,
+                        }}
+                        onClick={
+                          startSpace
+                        }
+                        style={{
+                          position:
+                            "relative",
+                          padding:
+                            "15px 22px",
+                          borderRadius:
+                            "16px",
+                          border:
+                            "1px solid rgba(96,165,250,.3)",
+                          background:
+                            "linear-gradient(145deg, rgba(37,99,235,.18), rgba(15,23,42,.5))",
+                          color: "#dbeafe",
+                          cursor:
+                            "pointer",
+                          fontWeight:
+                            650,
+                          fontSize:
+                            "13px",
+                          display:
+                            "flex",
+                          alignItems:
+                            "center",
+                          gap: "10px",
+                          boxShadow:
+                            "0 0 35px rgba(59,130,246,.09)",
+                          backdropFilter:
+                            "blur(15px)",
+                          overflow:
+                            "hidden",
+                        }}
+                      >
+                        <motion.span
+                          animate={{
+                            x: [
+                              -5,
+                              50,
+                            ],
+                            opacity: [
+                              0,
+                              1,
+                              0,
+                            ],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat:
+                              Infinity,
+                          }}
+                          style={{
+                            position:
+                              "absolute",
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width:
+                              "45px",
+                            background:
+                              "linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent)",
+                            transform:
+                              "skewX(-20deg)",
+                          }}
+                        />
+
+                        <span
+                          style={{
+                            position:
+                              "relative",
+                            zIndex: 2,
+                          }}
+                        >
+                          ✦
+                        </span>
+
+                        <span
+                          style={{
+                            position:
+                              "relative",
+                            zIndex: 2,
+                          }}
+                        >
+                          {t.space}
+                        </span>
+                      </motion.button>
+                    </motion.div>
+                  </div>
+
+                  <div
+                    style={{
+                      display:
+                        "flex",
+                      justifyContent:
+                        "center",
+                    }}
+                  >
+                    <ProfileCard />
+                  </div>
+                </section>
+              </motion.main>
+            )}
+
+            {/* WORK */}
+
+            {page === "work" && (
+              <motion.main
+                key="work"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -20,
+                }}
+                style={{
+                  paddingTop:
+                    "100px",
+                  maxWidth:
+                    "900px",
+                  margin:
+                    "0 auto",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily:
+                      "monospace",
+                    fontSize:
+                      "10px",
+                    letterSpacing:
+                      ".25em",
+                    color:
+                      "#93c5fd",
+                  }}
+                >
+                  {lang === "es"
+                    ? "TRABAJO"
+                    : "WORK"}
+                </div>
+
+                <h1
+                  style={{
+                    fontSize:
+                      "clamp(45px,7vw,72px)",
+                    letterSpacing:
+                      "-.055em",
+                    margin:
+                      "16px 0",
+                  }}
+                >
+                  {t.workTitle}
+                </h1>
+
+                <p
+                  style={{
+                    color:
+                      "#94a3b8",
+                    maxWidth:
+                      "620px",
+                    lineHeight:
+                      1.7,
+                  }}
+                >
+                  {t.workDescription}
+                </p>
+
+                <div
+                  style={{
+                    display:
+                      "grid",
+                    gridTemplateColumns:
+                      "repeat(2, 1fr)",
+                    gap: "14px",
+                    marginTop:
+                      "55px",
+                  }}
+                >
+                  {t.areas.map(
+                    (
+                      area,
+                      index
+                    ) => (
+                      <motion.div
+                        key={
+                          area
+                        }
+                        whileHover={{
+                          y: -5,
+                        }}
+                        style={{
+                          padding:
+                            "25px",
+                          borderRadius:
+                            "20px",
+                          border:
+                            "1px solid rgba(255,255,255,.1)",
+                          background:
+                            "rgba(255,255,255,.035)",
+                          backdropFilter:
+                            "blur(18px)",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color:
+                              "#64748b",
+                            fontFamily:
+                              "monospace",
+                            fontSize:
+                              "10px",
+                            marginBottom:
+                              "20px",
+                          }}
+                        >
+                          0
+                          {index +
+                            1}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize:
+                              "20px",
+                            fontWeight:
+                              700,
+                          }}
+                        >
+                          {
+                            area
+                          }
+                        </div>
+                      </motion.div>
+                    )
+                  )}
+                </div>
+              </motion.main>
+            )}
+
+            {/* ABOUT */}
+
+            {page === "about" && (
+              <motion.main
+                key="about"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -20,
+                }}
+                style={{
+                  paddingTop:
+                    "100px",
+                  maxWidth:
+                    "800px",
+                  margin:
+                    "0 auto",
+                }}
+              >
+                <div
+                  style={{
+                    color:
+                      "#93c5fd",
+                    fontFamily:
+                      "monospace",
+                    fontSize:
+                      "10px",
+                    letterSpacing:
+                      ".25em",
+                  }}
+                >
+                  {t.about}
+                </div>
+
+                <h1
+                  style={{
+                    fontSize:
+                      "clamp(42px,7vw,70px)",
+                    lineHeight:
+                      1,
+                    letterSpacing:
+                      "-.055em",
+                    margin:
+                      "18px 0 30px",
+                  }}
+                >
+                  {t.aboutTitle}
+                </h1>
+
+                <p
+                  style={{
+                    fontSize:
+                      "18px",
+                    lineHeight:
+                      1.8,
+                    color:
+                      "#cbd5e1",
+                  }}
+                >
+                  {t.aboutText}
+                </p>
+
+                <div
+                  style={{
+                    marginTop:
+                      "55px",
+                    paddingTop:
+                      "25px",
+                    borderTop:
+                      "1px solid rgba(255,255,255,.1)",
+                    color:
+                      "#64748b",
+                    fontFamily:
+                      "monospace",
+                    fontSize:
+                      "11px",
+                    letterSpacing:
+                      ".15em",
+                  }}
+                >
+                  {t.currently.toUpperCase()}
+                </div>
+
+                <div
+                  style={{
+                    marginTop:
+                      "15px",
+                    color:
+                      "#94a3b8",
+                    lineHeight:
+                      1.7,
+                  }}
+                >
+                  Business operations ·
+                  Digitalization · Process
+                  improvement · Problem
+                  solving
+                </div>
+              </motion.main>
+            )}
+
+            {/* CONTACT */}
+
+            {page === "contact" && (
+              <motion.main
+                key="contact"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                style={{
+                  paddingTop:
+                    "130px",
+                  maxWidth:
+                    "700px",
+                  margin:
+                    "0 auto",
+                }}
+              >
+                <div
+                  style={{
+                    color:
+                      "#93c5fd",
+                    fontFamily:
+                      "monospace",
+                    fontSize:
+                      "10px",
+                    letterSpacing:
+                      ".25em",
+                  }}
+                >
+                  CONTACT
+                </div>
+
+                <h1
+                  style={{
+                    fontSize:
+                      "clamp(52px,8vw,80px)",
+                    letterSpacing:
+                      "-.06em",
+                    margin:
+                      "15px 0 25px",
+                  }}
+                >
+                  {t.contactTitle}
+                </h1>
+
+                <p
+                  style={{
+                    color:
+                      "#94a3b8",
+                    lineHeight:
+                      1.8,
+                    fontSize:
+                      "16px",
+                  }}
+                >
+                  {t.contactText}
+                </p>
+
+                <a
+                  href="mailto:contacto@jimmycornejo.com"
+                  style={{
+                    display:
+                      "inline-flex",
+                    alignItems:
+                      "center",
+                    gap: "10px",
+                    marginTop:
+                      "35px",
+                    padding:
+                      "14px 20px",
+                    borderRadius:
+                      "999px",
+                    background:
+                      "#fff",
+                    color:
+                      "#020617",
+                    textDecoration:
+                      "none",
+                    fontWeight:
+                      700,
+                    fontSize:
+                      "13px",
+                  }}
+                >
+                  <Mail size={15} />
+                  {t.send}
+                </a>
+              </motion.main>
+            )}
+          </AnimatePresence>
+
+          {/* FOOTER */}
+
+          <footer
+            style={{
+              position:
+                "absolute",
+              bottom: "20px",
+              left: "28px",
+              right: "28px",
+              display:
+                "flex",
+              justifyContent:
+                "space-between",
+              color:
+                "#475569",
+              fontSize:
+                "10px",
+              fontFamily:
+                "monospace",
+              letterSpacing:
+                ".08em",
+            }}
+          >
+            <span>
+              JIMMY CORNEJO —{" "}
+              {t.small}
+            </span>
+
+            <span>
+              2026
+            </span>
+          </footer>
+        </div>
+      )}
     </div>
   );
 }
